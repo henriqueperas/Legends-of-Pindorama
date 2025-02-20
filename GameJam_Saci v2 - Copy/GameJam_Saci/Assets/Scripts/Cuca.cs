@@ -322,7 +322,7 @@ public class Cuca : MonoBehaviour
     {
         if (!transitioning)
         {
-            attackIndex = Random.Range(1, 4);
+            attackIndex = Random.Range(1, 5);
         }
     }
 

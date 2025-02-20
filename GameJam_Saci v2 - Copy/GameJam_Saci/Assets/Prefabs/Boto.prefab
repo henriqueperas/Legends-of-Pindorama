@@ -172,11 +172,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f07082443dc2e8648b8332604a6a8b26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
-  speed: 5
-  acceleration: 0.5
-  rotationSpeed: 200
-  chaseDuration: 10
+  velocidade: 10
+  maxRicochetes: 5
+  camadasParaRicochete:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!95 &-3765908104382282412
 Animator:
   serializedVersion: 5

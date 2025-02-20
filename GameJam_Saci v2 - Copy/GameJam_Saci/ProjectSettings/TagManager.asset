@@ -14,6 +14,7 @@ TagManager:
   - AtkIara2
   - AtkIara3
   - AtkIara4
+  - Ground
   layers:
   - Default
   - TransparentFX

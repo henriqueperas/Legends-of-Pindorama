@@ -157,8 +157,7 @@ public class Iara : MonoBehaviour
     private IEnumerator BotoAttack()
     {
         GameObject missile = Instantiate(missilePrefab, missileSpawnPoint.position, Quaternion.identity);
-        missile.GetComponent<Boto>().player = player.transform;
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(3f);
         attackIndex = 0;
     }
 

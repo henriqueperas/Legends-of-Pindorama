@@ -4,53 +4,90 @@ using UnityEngine;
 
 public class Boto : MonoBehaviour
 {
-    public Transform player;           // Referência ao jogador
-    public float speed = 5f;           // Velocidade inicial do míssil
-    public float acceleration = 0.5f;  // Aceleração do míssil
-    public float rotationSpeed = 200f; // Velocidade de rotação do míssil
-    public float chaseDuration = 10f; // Duração da perseguição (5 minutos em segundos)
+    public float velocidade = 10f;
+    public int maxRicochetes = 5;
+    public LayerMask camadasParaRicochete;
 
+    private int ricochetes = 0;
     private Rigidbody2D rb;
-    private float chaseTimer;
+    private Vector2 direcao;
+    private bool seguindoPlayer = true;
+    private Transform player;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        chaseTimer = chaseDuration;
+        player = GameObject.FindGameObjectWithTag("Player").transform;
+
+        // Define um lado aleatório para spawn (esquerda ou direita)
+        float lado = Random.value < 0.5f ? -1f : 1f;
+        transform.position = new Vector2(lado * Camera.main.orthographicSize * 1.2f, Random.Range(-2f, 2f));
+
+        StartCoroutine(PrepararTiro());
+    }
+
+    IEnumerator PrepararTiro()
+    {
+        yield return new WaitForSeconds(3f); // Espera 3 segundos mirando no player
+
+        if (player != null)
+        {
+            direcao = (player.position - transform.position).normalized;
+        }
+        seguindoPlayer = false;
+        rb.velocity = direcao * velocidade;
     }
 
     void Update()
     {
-        if (chaseTimer > 0)
+        if (seguindoPlayer && player != null)
         {
-            chaseTimer -= Time.deltaTime;
+            // Continua mirando no player até o tempo acabar
+            direcao = (player.position - transform.position).normalized;
+        }
 
-            // Calcular direção para o jogador
-            Vector2 direction = (Vector2)player.position - rb.position;
-            direction.Normalize();
-
-            // Ajustar a direção gradualmente para criar o efeito de derrapagem
-            float rotateAmount = Vector3.Cross(direction, transform.right).z;
-            rb.angularVelocity = -rotateAmount * rotationSpeed;
-
-            // Aplicar velocidade e aceleração
-            rb.velocity = transform.right * speed;
-            speed += acceleration * Time.deltaTime;
+        if(player.position.x <= gameObject.transform.position.x)
+        {
+            gameObject.GetComponent<SpriteRenderer>().flipX = true;
         }
         else
         {
-            Destroy(gameObject); // Destroi o míssil após o tempo de perseguição
+            gameObject.GetComponent<SpriteRenderer>().flipX = false;
         }
+
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    void OnCollisionEnter2D(Collision2D colisao)
     {
+        if (colisao.gameObject.CompareTag("Ground"))
+        {
+            if (ricochetes < maxRicochetes)
+            {
+                // Calcula o novo vetor de direção após ricochete
+                direcao = Vector2.Reflect(direcao, colisao.contacts[0].normal);
+                rb.velocity = direcao * velocidade;
+                ricochetes++;
+            }
+            else
+            {
+                // Ignora colisões após 5 ricochetes
+                GetComponent<Collider2D>().enabled = false;
+            }
+        }
+
         // Caso o míssil colida com o jogador ou outro objeto
-        if (collision.gameObject.CompareTag("Player"))
+        if (colisao.gameObject.CompareTag("Player"))
         {
             Debug.Log("Míssil atingiu o jogador!");
             // Aqui você pode aplicar dano ou efeitos
+
+            Destroy(gameObject); // Destroi o míssil após a colisão
         }
-        Destroy(gameObject); // Destroi o míssil após a colisão
+        
+    }
+
+    void OnBecameInvisible()
+    {
+        Destroy(gameObject);
     }
 }
